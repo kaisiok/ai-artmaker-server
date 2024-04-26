@@ -1,5 +1,6 @@
 const express = require("express");
 const sequelize = require("./util/database");
+const bodyParser = require("body-parser");
 
 const User = require("./models/user");
 const Password = require("./models/password");
@@ -8,6 +9,12 @@ const Ai_img = require("./models/ai_img");
 
 const app = express();
 const port = 3000;
+
+const userRoutes = require("./routes/user");
+
+app.use(bodyParser.json());
+
+app.use(userRoutes);
 
 app.get("/", (req, res) => {
   res.send("Hello World!");

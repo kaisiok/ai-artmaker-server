@@ -10,7 +10,7 @@ const Password = sequelize.define("password", {
     primaryKey: true,
   },
   salt: Sequelize.STRING,
-  passowrd: Sequelize.STRING,
+  password: Sequelize.STRING,
 });
 
 module.exports = Password;
