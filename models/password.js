@@ -9,7 +9,6 @@ const Password = sequelize.define("password", {
     allowNull: false,
     primaryKey: true,
   },
-  salt: Sequelize.STRING,
   password: Sequelize.STRING,
 });
 
