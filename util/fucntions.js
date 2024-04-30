@@ -24,3 +24,16 @@ exports.verifyToken = (req, res, next) => {
     next();
   });
 };
+
+exports.verifyTag = (tag1, tag2, tag3, tag4) => {
+  if (
+    (tag1 === "" || tag1 === "" || tag1 === "" || tag1 === "") &&
+    (tag2 === "" || tag2 === "" || tag2 === "" || tag2 === "") &&
+    (tag3 === "" || tag3 === "" || tag3 === "" || tag3 === "") &&
+    (tag4 === "" || tag4 === "" || tag4 === "" || tag4 === "")
+  ) {
+    return true;
+  } else {
+    return false;
+  }
+};

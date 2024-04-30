@@ -21,6 +21,7 @@ app.use(cors());
 app.use(cookieParser());
 app.use(bodyParser.json());
 
+app.use("/img", express.static("img"));
 app.use(verifyToken);
 
 app.use(userRoutes);

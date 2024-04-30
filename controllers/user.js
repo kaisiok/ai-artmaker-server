@@ -1,4 +1,5 @@
 const bcrypt = require("bcrypt");
+const fs = require("fs");
 
 const sequelize = require("../util/database");
 
@@ -45,7 +46,7 @@ exports.postSignUp = async (req, res, next) => {
 exports.deleteUserInfo = async (req, res, next) => {
   const transaction = await sequelize.transaction();
   try {
-    if (req.cookies.authorization) {
+    if (req.authorization) {
       const hashedPassword = await Password.findOne({
         where: { userId: req.user.id },
       });
@@ -55,6 +56,20 @@ exports.deleteUserInfo = async (req, res, next) => {
         async (err, result) => {
           if (result) {
             //로컬폴더에 있는 사진 삭제하는 기능 추가하기
+
+            try {
+              const imgfiles = await Ai_img.findAll({
+                where: { userId: req.user.id },
+              });
+              for (let i = 0; i < imgfiles.length; i++) {
+                fs.unlinkSync(imgfiles[i].dataValues.file_path);
+              }
+            } catch (err) {
+              console.log(err);
+              return res
+                .status(500)
+                .json({ message: "server error, img delete fail" });
+            }
 
             await Ai_img.destroy(
               { where: { userId: req.user.id } },
