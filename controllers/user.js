@@ -8,14 +8,13 @@ const Social_login = require("../models/soical_login");
 const Ai_img = require("../models/ai_img");
 
 const { generateToken } = require("../util/fucntions");
-const { where } = require("sequelize");
 
 exports.postSignUp = async (req, res, next) => {
   const transaction = await sequelize.transaction();
   try {
     const duplicatedUser = await User.findAll({ where: { name: req.body.id } });
     if (duplicatedUser[0]) {
-      res.status(406).json({ message: "Username invalid" });
+      res.status(406).json({ message: "invalid userid" });
     } else {
       const userCreate = await User.create(
         { name: req.body.id },
@@ -124,7 +123,7 @@ exports.postLogin = async (req, res, next) => {
                 username: userId.dataValues.name,
               });
           } else {
-            res.status(406).json({ message: "Password invalid" });
+            res.status(406).json({ message: "invalid password " });
           }
         }
       );
@@ -146,6 +145,55 @@ exports.postLogout = async (req, res, next) => {
         .json({ message: "logout completed" });
     } else {
       res.status(406).json({ message: "token doesn't exist" });
+    }
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ message: "server error" });
+  }
+};
+
+exports.putChangePassword = async (req, res, next) => {
+  try {
+    if (req.cookies.authorization) {
+      const userId = req.user.id;
+      const lastPassword = req.body.lastPassword;
+      const newPassword = req.body.newPassword;
+      if (lastPassword && newPassword) {
+        const hashedPassword = await Password.findOne({
+          where: { userId: userId },
+        });
+        bcrypt.compare(
+          lastPassword,
+          hashedPassword.dataValues.password,
+          async (err, result) => {
+            if (result) {
+              const newHashedPassword = await bcrypt.hash(newPassword, 10);
+              await hashedPassword.update({ password: newHashedPassword });
+              res.status(200).json({ message: "password changed" });
+            } else {
+              res.status(406).json({ message: "invalid password" });
+            }
+          }
+        );
+      } else {
+        res.status(406).json({ message: "invalid request" });
+      }
+    } else {
+      res.status(406).json({ message: "invalid token" });
+    }
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ message: "server error" });
+  }
+};
+
+exports.getCheckId = async (req, res, next) => {
+  try {
+    const duplicatedUser = await User.findAll({ where: { name: req.body.id } });
+    if (duplicatedUser[0]) {
+      res.status(200).json({ message: "has duplicated user id" });
+    } else {
+      res.status(200).json({ message: "ok" });
     }
   } catch (err) {
     console.log(err);

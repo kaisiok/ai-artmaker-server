@@ -8,5 +8,7 @@ router.post("/user/signup", userController.postSignUp);
 router.post("/user/login", userController.postLogin);
 router.post("/user/logout", userController.postLogout);
 router.delete("/user/delete/userinfo", userController.deleteUserInfo);
+router.get("/user/checkid", userController.getCheckId);
+router.put("/user/change/password", userController.putChangePassword);
 
 module.exports = router;
