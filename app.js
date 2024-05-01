@@ -17,8 +17,15 @@ const port = 3000;
 const userRoutes = require("./routes/user");
 const ai_imgRoutes = require("./routes/ai_img");
 
-app.use(cors());
+const corsOptions = {
+  origin:'http://localhost:3001',
+  credentials:true
+}
+
+
+app.use(cors(corsOptions));
 app.use(cookieParser());
+app.use(express.json({ limit: '3mb' }));
 app.use(bodyParser.json());
 
 app.use("/img", express.static("img"));

@@ -12,7 +12,7 @@ const { verifyTag } = require("../util/fucntions");
 
 dotenv.config();
 
-exports.getTextImg = async (req, res, next) => {
+exports.postTextImg = async (req, res, next) => {
   try {
     const imgText = req.body.prompt;
     const modelName = req.body.model; //모델 추가하기
@@ -47,7 +47,7 @@ exports.getTextImg = async (req, res, next) => {
   }
 };
 
-exports.getTagImg = async (res, req, next) => {
+exports.postTagImg = async (req, res, next) => {
   try {
     const imgTag1 = req.body.Tag1;
     const imgTag2 = req.body.Tag2;
@@ -87,7 +87,7 @@ exports.getTagImg = async (res, req, next) => {
   }
 };
 
-exports.postSaveImg = async (res, req, next) => {
+exports.postSaveImg = async (req, res, next) => {
   try {
     if (!req.cookies.authorization) {
       return res.status(406).json({ message: "token doesn't exist" });
@@ -99,7 +99,7 @@ exports.postSaveImg = async (res, req, next) => {
         const imgdata = req.body.imgdata;
         const imgName = req.user.username + `${imgs.length}`;
         base64Img.img(
-          "data:image/png;base64," + imgdata,
+            imgdata,
           "./img",
           imgName,
           (err, filepath) => {
@@ -125,7 +125,7 @@ exports.postSaveImg = async (res, req, next) => {
   }
 };
 
-exports.getLoadImg = async (res, req, next) => {
+exports.getLoadImg = async (req, res, next) => {
   try {
     //이미지 전송할 때 id도 같이 보내기.
     const userId = req.user.id;
@@ -137,14 +137,14 @@ exports.getLoadImg = async (res, req, next) => {
         id: imgs[i].dataValues.id,
       };
     }
-    req.status(200).json({ imgs: imgArrey });
+    res.status(200).json({ imgs: imgArrey });
   } catch (err) {
     console.log(err);
     res.status(500).json({ message: "server error" });
   }
 };
 
-exports.deleteImg = async (res, req, next) => {
+exports.deleteImg = async (req, res, next) => {
   try {
     if (!req.cookies.authorization) {
       return res.status(406).json({ message: "token doesn't exist" });

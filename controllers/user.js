@@ -131,7 +131,7 @@ exports.postLogin = async (req, res, next) => {
               username: userId.dataValues.name,
             });
             res
-              .cookie("authorization", token, { httpOnly: true })
+              .cookie("authorization", token, { httpOnly: true ,sameSite: "none", secure: true})
               .status(200)
               .json({
                 message: "login completed",
