@@ -55,8 +55,6 @@ exports.deleteUserInfo = async (req, res, next) => {
         hashedPassword.dataValues.password,
         async (err, result) => {
           if (result) {
-            //로컬폴더에 있는 사진 삭제하는 기능 추가하기
-
             try {
               const imgfiles = await Ai_img.findAll({
                 where: { userId: req.user.id },
@@ -71,20 +69,11 @@ exports.deleteUserInfo = async (req, res, next) => {
                 .json({ message: "server error, img delete fail" });
             }
 
-            await Ai_img.destroy(
-              { where: { userId: req.user.id } },
-              { transaction: transaction }
-            );
-            await Social_login.destroy(
-              { where: { userId: req.user.id } },
-              { transaction: transaction }
-            );
-            await Password.destroy(
-              { where: { userId: req.user.id } },
-              { transaction: transaction }
-            );
             await User.destroy(
-              { where: { Id: req.user.id } },
+              {
+                where: { id: req.user.id },
+                cascade: true,
+              },
               { transaction: transaction }
             );
             await transaction.commit();
@@ -131,7 +120,11 @@ exports.postLogin = async (req, res, next) => {
               username: userId.dataValues.name,
             });
             res
-              .cookie("authorization", token, { httpOnly: true ,sameSite: "none", secure: true})
+              .cookie("authorization", token, {
+                httpOnly: true,
+                sameSite: "none",
+                secure: true,
+              })
               .status(200)
               .json({
                 message: "login completed",

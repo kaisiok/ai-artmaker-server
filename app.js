@@ -18,14 +18,13 @@ const userRoutes = require("./routes/user");
 const ai_imgRoutes = require("./routes/ai_img");
 
 const corsOptions = {
-  origin:'http://localhost:3001',
-  credentials:true
-}
-
+  origin: "http://localhost:3001",
+  credentials: true,
+};
 
 app.use(cors(corsOptions));
 app.use(cookieParser());
-app.use(express.json({ limit: '3mb' }));
+app.use(express.json({ limit: "3mb" }));
 app.use(bodyParser.json());
 
 app.use("/img", express.static("img"));
@@ -38,9 +37,24 @@ app.get("/", (req, res) => {
   res.send("Hello World!");
 });
 
-User.hasOne(Password);
-User.hasOne(Social_login);
-User.hasMany(Ai_img);
+User.hasOne(Password, {
+  foreignKey: {
+    allowNull: false,
+    onDelete: "CASCADE",
+  },
+});
+User.hasOne(Social_login, {
+  foreignKey: {
+    allowNull: false,
+    onDelete: "CASCADE",
+  },
+});
+User.hasMany(Ai_img, {
+  foreignKey: {
+    allowNull: false,
+    onDelete: "CASCADE",
+  },
+});
 
 sequelize
   .sync()
