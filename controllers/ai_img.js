@@ -49,10 +49,10 @@ exports.postTextImg = async (req, res, next) => {
 
 exports.postTagImg = async (req, res, next) => {
   try {
-    const imgTag1 = req.body.Tag1;
-    const imgTag2 = req.body.Tag2;
-    const imgTag3 = req.body.Tag3;
-    const imgTag4 = req.body.Tag4;
+    const imgTag1 = req.body.tag1;
+    const imgTag2 = req.body.tag2;
+    const imgTag3 = req.body.tag3;
+    const imgTag4 = req.body.tag4;
     const modelName = req.body.model; //모델 추가하기
 
     if (verifyTag(imgTag1, imgTag2, imgTag3, imgTag4)) {
@@ -98,25 +98,20 @@ exports.postSaveImg = async (req, res, next) => {
       } else {
         const imgdata = req.body.imgdata;
         const imgName = req.user.username + `${imgs.length}`;
-        base64Img.img(
-            imgdata,
-          "./img",
-          imgName,
-          (err, filepath) => {
-            if (err) {
-              console.error("Error saving image:", err);
-            } else {
-              console.log("Image saved successfully at:", filepath);
-              Ai_img.create({
-                userId: req.user.id,
-                file_name: imgName,
-                file_path: filepath,
-              }).then((data) => {
-                res.status(200).json({ filepath, imgcount: imgs.length });
-              });
-            }
+        base64Img.img(imgdata, "./img", imgName, (err, filepath) => {
+          if (err) {
+            console.error("Error saving image:", err);
+          } else {
+            console.log("Image saved successfully at:", filepath);
+            Ai_img.create({
+              userId: req.user.id,
+              file_name: imgName,
+              file_path: filepath,
+            }).then((data) => {
+              res.status(200).json({ filepath, imgcount: imgs.length });
+            });
           }
-        );
+        });
       }
     }
   } catch (err) {
