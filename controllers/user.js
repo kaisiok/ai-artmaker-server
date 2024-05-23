@@ -131,7 +131,7 @@ exports.postLogin = async (req, res, next) => {
                 username: userId.dataValues.name,
               });
           } else {
-            res.status(406).json({ message: "invalid password " });
+            res.status(406).json({ message: "invalid password" });
           }
         }
       );
@@ -146,6 +146,7 @@ exports.postLogin = async (req, res, next) => {
 
 exports.postLogout = async (req, res, next) => {
   try {
+    console.log(req.cookies);
     if (req.cookies.authorization) {
       res
         .cookie("authorization", "", { httpOnly: true, expires: new Date(0) })
@@ -197,11 +198,18 @@ exports.putChangePassword = async (req, res, next) => {
 
 exports.getCheckId = async (req, res, next) => {
   try {
-    const duplicatedUser = await User.findAll({ where: { name: req.body.id } });
-    if (duplicatedUser[0]) {
-      res.status(200).json({ message: "has duplicated user id" });
+    const userId = req.query.id;
+    if (!userId) {
+      req.status(400).json({ message: "empty id query" });
     } else {
-      res.status(200).json({ message: "ok" });
+      const duplicatedUser = await User.findAll({
+        where: { name: userId },
+      });
+      if (duplicatedUser[0]) {
+        res.status(409).json({ message: "UserId already exists" });
+      } else {
+        res.status(200).json({ message: "ok" });
+      }
     }
   } catch (err) {
     console.log(err);
