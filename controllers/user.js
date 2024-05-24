@@ -15,6 +15,7 @@ exports.postSignUp = async (req, res, next) => {
   try {
     const duplicatedUser = await User.findAll({ where: { name: req.body.id } });
     if (duplicatedUser[0]) {
+      await transaction.rollback();
       res.status(406).json({ message: "invalid userid" });
     } else {
       const userCreate = await User.create(
@@ -86,12 +87,14 @@ exports.deleteUserInfo = async (req, res, next) => {
               .status(200)
               .json({ message: "delete userInfo completed" });
           } else {
+            await transaction.rollback();
             res.status(406).json({ message: "Password invalid" });
           }
         }
       );
     } else {
-      res.status(406).json({ message: "token doesn't exist" });
+      await transaction.rollback();
+      res.status(401).json({ message: "token doesn't exist" });
     }
   } catch (err) {
     console.log(err);
@@ -188,7 +191,7 @@ exports.putChangePassword = async (req, res, next) => {
         res.status(406).json({ message: "invalid request" });
       }
     } else {
-      res.status(406).json({ message: "invalid token" });
+      res.status(401).json({ message: "invalid token" });
     }
   } catch (err) {
     console.log(err);
