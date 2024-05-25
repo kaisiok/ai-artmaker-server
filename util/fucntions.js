@@ -12,17 +12,18 @@ exports.verifyToken = (req, res, next) => {
   const token = req.cookies.authorization;
   if (!token) {
     req.authorization = false;
-    return next();
-  }
-  jwt.verify(token, process.env.TOKEN_SALT, (err, decoded) => {
-    if (err) {
-      req.authorization = false;
-    } else {
-      req.authorization = true;
-      req.user = decoded;
-    }
     next();
-  });
+  } else {
+    jwt.verify(token, process.env.TOKEN_SALT, (err, decoded) => {
+      if (err) {
+        req.authorization = false;
+      } else {
+        req.authorization = true;
+        req.user = decoded;
+      }
+      next();
+    });
+  }
 };
 
 exports.verifyTag = (tag1, tag2, tag3, tag4) => {

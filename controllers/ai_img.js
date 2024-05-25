@@ -15,25 +15,31 @@ dotenv.config();
 exports.postTextImg = async (req, res, next) => {
   try {
     const imgText = req.body.prompt;
-    const modelName = req.body.model; //모델 추가하기
+    const imgStyle = req.body.style;
 
     const imgName = "testimgName";
     const userId = "1";
 
     const wuiSetting = {
-      prompt: "masterpiece, (best quality:1.1), 1girl," + imgText,
-      negative_prompt: "nsfw, nude",
-      seed: 1,
-      steps: 20,
-      width: 512,
-      height: 800,
-      cfg_scale: 7,
-      sampler_name: "DPM++ 2M Karras",
-      n_iter: 1,
+      prompt: "masterpiece, best quality," + imgStyle + "," + imgText,
+      negative_prompt:
+        "(worst quality, low quality, normal quality, blur:2.0), Downcast eyes, unfocused eyes, nsfw,nude",
+      seed: -1,
+      subseed: -1,
+      subseed_strength: 0,
+      seed_resize_from_h: -1,
+      seed_resize_from_w: -1,
+      sampler_name: "Euler",
       batch_size: 1,
+      n_iter: 1,
+      steps: 15,
+      cfg_scale: 7,
+      width: 720,
+      height: 1440,
+      restore_faces: true,
     };
-    if (!req.cookies.authorization) {
-      return res.status(406).json({ message: "token doesn't exist" });
+    if (!req.authorization) {
+      return res.status(401).json({ message: "token doesn't exist" });
     } else {
       const imgdata = await axios.post(
         process.env.WEBUI_ADRESS + "txt2img",
@@ -89,8 +95,8 @@ exports.postTagImg = async (req, res, next) => {
 
 exports.postSaveImg = async (req, res, next) => {
   try {
-    if (!req.cookies.authorization) {
-      return res.status(406).json({ message: "token doesn't exist" });
+    if (!req.authorization) {
+      return res.status(401).json({ message: "token doesn't exist" });
     } else {
       const imgs = await Ai_img.findAll({ where: { userId: req.user.id } }); //이미지 테이블 찾기
       if (imgs.length >= 4) {
@@ -122,17 +128,20 @@ exports.postSaveImg = async (req, res, next) => {
 
 exports.getLoadImg = async (req, res, next) => {
   try {
-    //이미지 전송할 때 id도 같이 보내기.
-    const userId = req.user.id;
-    const imgs = await Ai_img.findAll({ where: { userId: userId } });
-    const imgArrey = [];
-    for (let i = 0; i < imgs.length; i++) {
-      imgArrey[i] = {
-        filepath: imgs[i].dataValues.file_path,
-        id: imgs[i].dataValues.id,
-      };
+    if (req.user) {
+      const userId = req.user.id;
+      const imgs = await Ai_img.findAll({ where: { userId: userId } });
+      const imgArrey = [];
+      for (let i = 0; i < imgs.length; i++) {
+        imgArrey[i] = {
+          filepath: imgs[i].dataValues.file_path,
+          id: imgs[i].dataValues.id,
+        };
+      }
+      res.status(200).json({ imgs: imgArrey });
+    } else {
+      res.status(401).json({ message: "token doesn't exist" });
     }
-    res.status(200).json({ imgs: imgArrey });
   } catch (err) {
     console.log(err);
     res.status(500).json({ message: "server error" });
@@ -141,8 +150,8 @@ exports.getLoadImg = async (req, res, next) => {
 
 exports.deleteImg = async (req, res, next) => {
   try {
-    if (!req.cookies.authorization) {
-      return res.status(406).json({ message: "token doesn't exist" });
+    if (!req.authorization) {
+      return res.status(401).json({ message: "token doesn't exist" });
     } else if (!req.body.imgid) {
       return res.status(406).json({ message: "invalid img id" });
     } else {
@@ -153,7 +162,7 @@ exports.deleteImg = async (req, res, next) => {
       const imgFilePath = savedImg.dataValues.file_path;
 
       if (imgOwnerId !== userId) {
-        return res.status(406).json({ message: "not owner of img" });
+        return res.status(403).json({ message: "not owner of img" });
       } else {
         fs.unlink(imgFilePath, async (err) => {
           if (err) {

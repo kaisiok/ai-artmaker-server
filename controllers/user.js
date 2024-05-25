@@ -149,8 +149,7 @@ exports.postLogin = async (req, res, next) => {
 
 exports.postLogout = async (req, res, next) => {
   try {
-    console.log(req.cookies);
-    if (req.cookies.authorization) {
+    if (req.authorization) {
       res
         .cookie("authorization", "", { httpOnly: true, expires: new Date(0) })
         .status(200)
@@ -166,7 +165,7 @@ exports.postLogout = async (req, res, next) => {
 
 exports.putChangePassword = async (req, res, next) => {
   try {
-    if (req.cookies.authorization) {
+    if (req.authorization) {
       const userId = req.user.id;
       const lastPassword = req.body.lastPassword;
       const newPassword = req.body.newPassword;
