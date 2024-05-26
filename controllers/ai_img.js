@@ -102,11 +102,22 @@ exports.postSaveImg = async (req, res, next) => {
       if (imgs.length >= 4) {
         return res.status(406).json({ message: "too many images" }); //4장이상이면 반려
       } else {
+        const currentDate = new Date();
+        const timestamp =
+          currentDate.getFullYear().toString() +
+          (currentDate.getMonth() + 1).toString().padStart(2, "0") +
+          currentDate.getDate().toString().padStart(2, "0") +
+          currentDate.getHours().toString().padStart(2, "0") +
+          currentDate.getMinutes().toString().padStart(2, "0") +
+          currentDate.getSeconds().toString().padStart(2, "0") +
+          currentDate.getMilliseconds().toString().padStart(3, "0");
+
         const imgdata = req.body.imgdata;
-        const imgName = req.user.username + `${imgs.length}`;
+        const imgName = req.user.username + timestamp;
         base64Img.img(imgdata, "./img", imgName, (err, filepath) => {
           if (err) {
             console.error("Error saving image:", err);
+            res.status(500).json({ message: "server error" });
           } else {
             console.log("Image saved successfully at:", filepath);
             Ai_img.create({
