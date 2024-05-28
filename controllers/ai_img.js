@@ -55,29 +55,26 @@ exports.postTextImg = async (req, res, next) => {
 
 exports.postTagImg = async (req, res, next) => {
   try {
-    const imgTag1 = req.body.tag1;
-    const imgTag2 = req.body.tag2;
-    const imgTag3 = req.body.tag3;
-    const imgTag4 = req.body.tag4;
-    const modelName = req.body.model; //모델 추가하기
+    const imgCode = req.body.code;
 
-    if (verifyTag(imgTag1, imgTag2, imgTag3, imgTag4)) {
+    if (verifyTag(imgCode) !== false) {
       const wuiSetting = {
-        prompt:
-          "masterpiece, (best quality:1.1), 1girl," +
-          imgTag1 +
-          imgTag2 +
-          imgTag3 +
-          imgTag4,
-        negative_prompt: "nsfw, nude",
-        seed: 1,
-        steps: 20,
-        width: 512,
-        height: 800,
-        cfg_scale: 7,
-        sampler_name: "DPM++ 2M Karras",
-        n_iter: 1,
+        prompt: "masterpiece, best quality," + verifyTag(imgCode),
+        negative_prompt:
+          "(worst quality, low quality, normal quality, blur:2.0), Downcast eyes, unfocused eyes, nsfw,nude",
+        seed: -1,
+        subseed: -1,
+        subseed_strength: 0,
+        seed_resize_from_h: -1,
+        seed_resize_from_w: -1,
+        sampler_name: "Euler",
         batch_size: 1,
+        n_iter: 1,
+        steps: 15,
+        cfg_scale: 7,
+        width: 720,
+        height: 1440,
+        restore_faces: true,
       };
       const imgdata = await axios.post(
         process.env.WEBUI_ADRESS + "txt2img",

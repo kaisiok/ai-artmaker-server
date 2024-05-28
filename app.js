@@ -3,6 +3,7 @@ const sequelize = require("./util/database");
 const bodyParser = require("body-parser");
 const cookieParser = require("cookie-parser");
 const cors = require("cors");
+const path = require("path");
 
 const User = require("./models/user");
 const Password = require("./models/password");
@@ -27,7 +28,8 @@ app.use(cookieParser());
 app.use(express.json({ limit: "3mb" }));
 app.use(bodyParser.json());
 
-app.use("/img", express.static("img"));
+app.use("/img", express.static(path.join(__dirname, "img")));
+app.use("/img", express.static(path.join(__dirname, "sampleimg")));
 app.use(verifyToken);
 
 app.use(userRoutes);
