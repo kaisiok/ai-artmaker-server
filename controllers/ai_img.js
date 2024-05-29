@@ -16,12 +16,10 @@ exports.postTextImg = async (req, res, next) => {
   try {
     const imgText = req.body.prompt;
     const imgStyle = req.body.style;
-
-    const imgName = "testimgName";
-    const userId = "1";
+    const textpropt = "masterpiece, best quality," + imgStyle;
 
     const wuiSetting = {
-      prompt: "masterpiece, best quality," + imgStyle + "," + imgText,
+      prompt: textpropt + "," + imgText,
       negative_prompt:
         "(worst quality, low quality, normal quality, blur:2.0), Downcast eyes, unfocused eyes, nsfw,nude",
       seed: -1,
@@ -36,7 +34,7 @@ exports.postTextImg = async (req, res, next) => {
       cfg_scale: 7,
       width: 720,
       height: 1440,
-      restore_faces: true,
+      restore_faces: false,
     };
     if (!req.authorization) {
       return res.status(401).json({ message: "token doesn't exist" });
@@ -56,12 +54,11 @@ exports.postTextImg = async (req, res, next) => {
 exports.postTagImg = async (req, res, next) => {
   try {
     const imgCode = req.body.code;
-
     if (verifyTag(imgCode) !== false) {
       const wuiSetting = {
         prompt: "masterpiece, best quality," + verifyTag(imgCode),
         negative_prompt:
-          "(worst quality, low quality, normal quality, blur:2.0), Downcast eyes, unfocused eyes, nsfw,nude",
+          "(worst quality, low quality, normal quality, blur:2.0), Downcast eyes, unfocused eyes,nsfw,nude",
         seed: -1,
         subseed: -1,
         subseed_strength: 0,
@@ -74,13 +71,15 @@ exports.postTagImg = async (req, res, next) => {
         cfg_scale: 7,
         width: 720,
         height: 1440,
-        restore_faces: true,
+        restore_faces: false,
       };
       const imgdata = await axios.post(
         process.env.WEBUI_ADRESS + "txt2img",
         wuiSetting
       );
       res.send("data:image/png;base64," + imgdata.data.images[0]);
+      console.log(verifyTag(imgCode));
+      // res.send("ok");
     } else {
       return res.status(406).json({ message: "invalid img tag" });
     }
