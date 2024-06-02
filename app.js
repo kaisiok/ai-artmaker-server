@@ -19,7 +19,7 @@ const userRoutes = require("./routes/user");
 const ai_imgRoutes = require("./routes/ai_img");
 
 const corsOptions = {
-  origin: "http://localhost:3001",
+  origin: ["https://ai-artmaker-client.vercel.app", "http://localhost:3001"],
   credentials: true,
 };
 

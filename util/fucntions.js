@@ -4,7 +4,7 @@ const dotenv = require("dotenv");
 dotenv.config();
 
 exports.generateToken = (user) => {
-  const token = jwt.sign(user, process.env.TOKEN_SALT, { expiresIn: "1h" });
+  const token = jwt.sign(user, process.env.TOKEN_SALT, { expiresIn: "3h" });
   return token;
 };
 

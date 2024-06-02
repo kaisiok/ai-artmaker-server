@@ -1,5 +1,9 @@
+const axios = require("axios");
 const bcrypt = require("bcrypt");
+const qs = require("qs");
 const fs = require("fs");
+const dotenv = require("dotenv");
+const crypto = require("crypto");
 
 const sequelize = require("../util/database");
 
@@ -212,6 +216,101 @@ exports.getCheckId = async (req, res, next) => {
       } else {
         res.status(200).json({ message: "ok" });
       }
+    }
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ message: "server error" });
+  }
+};
+
+exports.OAuthNaverLogin = async (req, res, next) => {
+  try {
+    const state = crypto.randomBytes(16).toString("hex"); // State 값 생성
+    const naverAuthUrl = `https://nid.naver.com/oauth2.0/authorize?response_type=code&client_id=${
+      process.env.OAUTH_NAVER_CLIENT_ID
+    }&redirect_uri=${encodeURIComponent(
+      "http://localhost:3001/oauth"
+    )}&state=${state}`;
+
+    res.json({ authUrl: naverAuthUrl });
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ message: "server error" });
+  }
+};
+
+exports.OAuthNaverCallback = async (req, res, next) => {
+  try {
+    const { code, state } = req.query;
+
+    const tokenResponse = await axios.post(
+      "https://nid.naver.com/oauth2.0/token",
+      qs.stringify({
+        grant_type: "authorization_code",
+        client_id: process.env.OAUTH_NAVER_CLIENT_ID,
+        client_secret: process.env.OAUTH_NAVER_CLIENT_SECRET,
+        code,
+        state,
+      })
+    );
+
+    const { access_token } = tokenResponse.data;
+
+    const profileResponse = await axios.get(
+      "https://openapi.naver.com/v1/nid/me",
+      {
+        headers: {
+          Authorization: `Bearer ${access_token}`,
+        },
+      }
+    );
+    if (profileResponse.data.resultcode === "00") {
+      const { id: naverId, name: naverName } = profileResponse.data.response;
+      const userId = await User.findOne({ where: { name: naverId } });
+      if (userId) {
+        const token = generateToken({
+          id: userId.dataValues.id,
+          username: naverName,
+        });
+        res
+          .cookie("authorization", token, {
+            httpOnly: true,
+            sameSite: "none",
+            secure: true,
+          })
+          .status(200)
+          .json({
+            message: "login completed",
+            username: naverName,
+          });
+      } else {
+        const userCreate = await User.create({ name: naverId });
+        const userIdCreated = userCreate.dataValues.id;
+        await Social_login.create({
+          social_code: "naver",
+          userId: userIdCreated,
+        });
+        const token = generateToken({
+          id: userIdCreated,
+          username: naverName,
+        });
+        res
+          .cookie("authorization", token, {
+            httpOnly: true,
+            sameSite: "none",
+            secure: true,
+          })
+          .status(200)
+          .json({
+            message: "login completed",
+            username: naverName,
+          });
+      }
+    } else {
+      res.status(500).json({
+        message:
+          profileResponse.data.resultcode + "/" + profileResponse.data.message,
+      });
     }
   } catch (err) {
     console.log(err);

@@ -10,8 +10,6 @@ const Social_login = sequelize.define("social_login", {
     primaryKey: true,
   },
   social_code: Sequelize.STRING,
-  external_id: Sequelize.STRING,
-  access_token: Sequelize.STRING,
 });
 
 module.exports = Social_login;
