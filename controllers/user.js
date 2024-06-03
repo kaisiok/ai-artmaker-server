@@ -155,7 +155,12 @@ exports.postLogout = async (req, res, next) => {
   try {
     if (req.authorization) {
       res
-        .cookie("authorization", "", { httpOnly: true, expires: new Date(0) })
+        .cookie("authorization", "", {
+          httpOnly: true,
+          sameSite: "none",
+          expires: new Date(0),
+          secure: true,
+        })
         .status(200)
         .json({ message: "logout completed" });
     } else {
@@ -229,7 +234,7 @@ exports.OAuthNaverLogin = async (req, res, next) => {
     const naverAuthUrl = `https://nid.naver.com/oauth2.0/authorize?response_type=code&client_id=${
       process.env.OAUTH_NAVER_CLIENT_ID
     }&redirect_uri=${encodeURIComponent(
-      "http://localhost:3001/oauth"
+      process.env.CLIENT_DOMAIN + "/oauth"
     )}&state=${state}`;
 
     res.json({ authUrl: naverAuthUrl });

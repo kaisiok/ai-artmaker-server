@@ -1,4 +1,6 @@
 const express = require("express");
+const https = require("https");
+const fs = require("fs");
 const sequelize = require("./util/database");
 const bodyParser = require("body-parser");
 const cookieParser = require("cookie-parser");
@@ -18,11 +20,23 @@ const port = 3000;
 const userRoutes = require("./routes/user");
 const ai_imgRoutes = require("./routes/ai_img");
 
-const corsOptions = {
-  origin: ["https://ai-artmaker-client.vercel.app", "http://localhost:3001"],
-  credentials: true,
+const httpsOptions = {
+  key: fs.readFileSync("./ssl/wallmakerserver.p-e.kr-key.pem"),
+  cert: fs.readFileSync("./ssl/wallmakerserver.p-e.kr-crt.pem"),
+  ca: fs.readFileSync("./ssl/wallmakerserver.p-e.kr-chain.pem"),
 };
+const server = https.createServer(httpsOptions, app);
 
+const corsOptions = {
+  origin: [process.env.CLIENT_DOMAIN, "http://localhost:3001"],
+  methods: "GET,POST,DELETE,OPTIONS",
+  credentials: true,
+  allowedHeaders: ["Content-Type", "Authorization"],
+};
+app.use((req, res, next) => {
+  console.log(`네트워크요청확인: ${req.method} ${req.url}`);
+  next();
+});
 app.use(cors(corsOptions));
 app.use(cookieParser());
 app.use(express.json({ limit: "3mb" }));
@@ -61,7 +75,7 @@ User.hasMany(Ai_img, {
 sequelize
   .sync()
   .then((result) => {
-    app.listen(port, () => {
+    server.listen(port, () => {
       console.log(`Example app listening on port ${port}`);
     });
   })
