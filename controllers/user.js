@@ -52,50 +52,90 @@ exports.deleteUserInfo = async (req, res, next) => {
   const transaction = await sequelize.transaction();
   try {
     if (req.authorization) {
-      const hashedPassword = await Password.findOne({
-        where: { userId: req.user.id },
-      });
-      bcrypt.compare(
-        req.body.password,
-        hashedPassword.dataValues.password,
-        async (err, result) => {
-          if (result) {
-            try {
-              const imgfiles = await Ai_img.findAll({
-                where: { userId: req.user.id },
-              });
-              for (let i = 0; i < imgfiles.length; i++) {
-                fs.unlinkSync(imgfiles[i].dataValues.file_path);
+      if (req.body.social === "") {
+        const hashedPassword = await Password.findOne({
+          where: { userId: req.user.id },
+        });
+        bcrypt.compare(
+          req.body.password,
+          hashedPassword.dataValues.password,
+          async (err, result) => {
+            if (result) {
+              try {
+                const imgfiles = await Ai_img.findAll({
+                  where: { userId: req.user.id },
+                });
+                for (let i = 0; i < imgfiles.length; i++) {
+                  fs.unlinkSync(imgfiles[i].dataValues.file_path);
+                }
+              } catch (err) {
+                console.log(err);
+                return res
+                  .status(500)
+                  .json({ message: "server error, img delete fail" });
               }
-            } catch (err) {
-              console.log(err);
-              return res
-                .status(500)
-                .json({ message: "server error, img delete fail" });
+
+              await User.destroy(
+                {
+                  where: { id: req.user.id },
+                  cascade: true,
+                },
+                { transaction: transaction }
+              );
+              await transaction.commit();
+
+              res
+                .cookie("authorization", "", {
+                  httpOnly: true,
+                  expires: new Date(0),
+                })
+                .status(200)
+                .json({ message: "delete userInfo completed" });
+            } else {
+              await transaction.rollback();
+              res.status(406).json({ message: "Password invalid" });
             }
-
-            await User.destroy(
-              {
-                where: { id: req.user.id },
-                cascade: true,
-              },
-              { transaction: transaction }
-            );
-            await transaction.commit();
-
-            res
-              .cookie("authorization", "", {
-                httpOnly: true,
-                expires: new Date(0),
-              })
-              .status(200)
-              .json({ message: "delete userInfo completed" });
-          } else {
-            await transaction.rollback();
-            res.status(406).json({ message: "Password invalid" });
           }
+        );
+      } else {
+        const access_tokenValue = await Social_login.findOne({
+          where: { userId: req.user.id },
+        });
+
+        const access_token = access_tokenValue.dataValues.access_token;
+        const url = `https://nid.naver.com/oauth2.0/token?grant_type=delete&client_id=${process.env.OAUTH_NAVER_CLIENT_ID}&client_secret=${process.env.OAUTH_NAVER_CLIENT_SECRET}&access_token=${access_token}&service_provider=NAVER`;
+
+        const response = await axios.delete(url);
+
+        if (response.data.result === "success") {
+          const imgfiles = await Ai_img.findAll({
+            where: { userId: req.user.id },
+          });
+          for (let i = 0; i < imgfiles.length; i++) {
+            fs.unlinkSync(imgfiles[i].dataValues.file_path);
+          }
+
+          await User.destroy(
+            {
+              where: { id: req.user.id },
+              cascade: true,
+            },
+            { transaction: transaction }
+          );
+          await transaction.commit();
+
+          res
+            .cookie("authorization", "", {
+              httpOnly: true,
+              expires: new Date(0),
+            })
+            .status(200)
+            .json({ message: "delete userInfo completed" });
+        } else {
+          await transaction.rollback();
+          res.status(500).json({ message: "server error" });
         }
-      );
+      }
     } else {
       await transaction.rollback();
       res.status(401).json({ message: "token doesn't exist" });
@@ -269,6 +309,7 @@ exports.OAuthNaverCallback = async (req, res, next) => {
         },
       }
     );
+
     if (profileResponse.data.resultcode === "00") {
       const { id: naverId, name: naverName } = profileResponse.data.response;
       const userId = await User.findOne({ where: { name: naverId } });
@@ -277,6 +318,12 @@ exports.OAuthNaverCallback = async (req, res, next) => {
           id: userId.dataValues.id,
           username: naverName,
         });
+
+        const loginedUser = await Social_login.findOne({
+          where: { userId: userId.dataValues.id },
+        });
+        await loginedUser.update({ access_token: access_token });
+
         res
           .cookie("authorization", token, {
             httpOnly: true,
@@ -293,6 +340,7 @@ exports.OAuthNaverCallback = async (req, res, next) => {
         const userIdCreated = userCreate.dataValues.id;
         await Social_login.create({
           social_code: "naver",
+          access_token: access_token,
           userId: userIdCreated,
         });
         const token = generateToken({

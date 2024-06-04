@@ -20,16 +20,13 @@ const port = 3000;
 const userRoutes = require("./routes/user");
 const ai_imgRoutes = require("./routes/ai_img");
 
-const httpsOptions = {
-  key: fs.readFileSync("./ssl/wallmakerserver.p-e.kr-key.pem"),
-  cert: fs.readFileSync("./ssl/wallmakerserver.p-e.kr-crt.pem"),
-  ca: fs.readFileSync("./ssl/wallmakerserver.p-e.kr-chain.pem"),
-};
-const server = https.createServer(httpsOptions, app);
+const keyPath = "./ssl/wallmakerserver.p-e.kr-key.pem";
+const certPath = "./ssl/wallmakerserver.p-e.kr-crt.pem";
+const caPath = "./ssl/wallmakerserver.p-e.kr-chain.pem";
 
 const corsOptions = {
   origin: [process.env.CLIENT_DOMAIN, "http://localhost:3001"],
-  methods: "GET,POST,DELETE,OPTIONS",
+  methods: "GET,POST,DELETE,PUT,OPTIONS",
   credentials: true,
   allowedHeaders: ["Content-Type", "Authorization"],
 };
@@ -75,9 +72,25 @@ User.hasMany(Ai_img, {
 sequelize
   .sync()
   .then((result) => {
-    server.listen(port, () => {
-      console.log(`Example app listening on port ${port}`);
-    });
+    if (
+      fs.existsSync(keyPath) &&
+      fs.existsSync(certPath) &&
+      fs.existsSync(caPath)
+    ) {
+      const httpsOptions = {
+        key: fs.readFileSync(keyPath),
+        cert: fs.readFileSync(certPath),
+        ca: fs.readFileSync(caPath),
+      };
+      const server = https.createServer(httpsOptions, app);
+      server.listen(port, () => {
+        console.log(`https app listening on port ${port}`);
+      });
+    } else {
+      app.listen(port, () => {
+        console.log(`http app listening on port ${port}`);
+      });
+    }
   })
   .catch((err) => {
     console.log(err);
