@@ -3,23 +3,36 @@ const fs = require("fs");
 const base64Img = require("base64-img");
 const dotenv = require("dotenv");
 
-const User = require("../models/user");
-const Password = require("../models/password");
-const Social_login = require("../models/soical_login");
 const Ai_img = require("../models/ai_img");
 
-const { verifyTag } = require("../util/fucntions");
+const { verifyTag, getStyleFromCode } = require("../util/fucntions");
 
 dotenv.config();
 
 exports.postTextImg = async (req, res, next) => {
   try {
     const imgText = req.body.prompt;
-    const imgStyle = req.body.style;
+    const imgStyle = getStyleFromCode(req.body.style);
     const textpropt = "masterpiece, best quality," + imgStyle;
 
+    const deeplApiKey = process.env.DEEPLAPIKEY;
+
+    const response = await axios.post(
+      "https://api-free.deepl.com/v2/translate",
+      null,
+      {
+        params: {
+          auth_key: deeplApiKey,
+          text: imgText,
+          target_lang: "EN",
+        },
+      }
+    );
+
+    const translatedText = response.data.translations[0].text;
+
     const wuiSetting = {
-      prompt: textpropt + "," + imgText,
+      prompt: textpropt + "," + translatedText,
       negative_prompt:
         "(worst quality, low quality, normal quality, blur:2.0), Downcast eyes, unfocused eyes, nsfw,nude",
       seed: -1,

@@ -85,3 +85,19 @@ exports.verifyTag = (imgCode) => {
     return false;
   }
 };
+
+exports.getStyleFromCode = (code) => {
+  let result;
+  if (code === "001") {
+    result = "charcoal drawing, <lora:EldritchCharcoalXL1.1:1>";
+  } else if (code === "002") {
+    result = "<lora:EldritchImpressionismXL1.5:1>";
+  } else if (code === "003") {
+    result = "<lora:EldritchComicsXL1.2:1>";
+  } else if (code === "004") {
+    result = "<lora:InkArtXL_1.2:1>";
+  } else {
+    result = "";
+  }
+  return result;
+};
