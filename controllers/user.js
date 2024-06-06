@@ -298,17 +298,11 @@ exports.OAuthNaverCallback = async (req, res, next) => {
         });
         await loginedUser.update({ access_token: access_token });
 
-        res
-          .cookie("authorization", token, {
-            httpOnly: true,
-            sameSite: "none",
-            secure: true,
-          })
-          .status(200)
-          .json({
-            message: "login completed",
-            username: naverName,
-          });
+        res.status(200).json({
+          message: "login completed",
+          username: naverName,
+          token: token,
+        });
       } else {
         const userCreate = await User.create({ name: naverId });
         const userIdCreated = userCreate.dataValues.id;
