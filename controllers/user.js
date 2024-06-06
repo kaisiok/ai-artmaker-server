@@ -84,13 +84,7 @@ exports.deleteUserInfo = async (req, res, next) => {
               );
               await transaction.commit();
 
-              res
-                .cookie("authorization", "", {
-                  httpOnly: true,
-                  expires: new Date(0),
-                })
-                .status(200)
-                .json({ message: "delete userInfo completed" });
+              res.status(200).json({ message: "delete userInfo completed" });
             } else {
               await transaction.rollback();
               res.status(406).json({ message: "Password invalid" });
@@ -124,13 +118,7 @@ exports.deleteUserInfo = async (req, res, next) => {
           );
           await transaction.commit();
 
-          res
-            .cookie("authorization", "", {
-              httpOnly: true,
-              expires: new Date(0),
-            })
-            .status(200)
-            .json({ message: "delete userInfo completed" });
+          res.status(200).json({ message: "delete userInfo completed" });
         } else {
           await transaction.rollback();
           res.status(500).json({ message: "server error" });
@@ -166,17 +154,11 @@ exports.postLogin = async (req, res, next) => {
               id: userId.dataValues.id,
               username: userId.dataValues.name,
             });
-            res
-              .cookie("authorization", token, {
-                httpOnly: true,
-                sameSite: "none",
-                secure: true,
-              })
-              .status(200)
-              .json({
-                message: "login completed",
-                username: userId.dataValues.name,
-              });
+            res.status(200).json({
+              message: "login completed",
+              username: userId.dataValues.name,
+              token: token,
+            });
           } else {
             res.status(406).json({ message: "invalid password" });
           }
@@ -194,15 +176,7 @@ exports.postLogin = async (req, res, next) => {
 exports.postLogout = async (req, res, next) => {
   try {
     if (req.authorization) {
-      res
-        .cookie("authorization", "", {
-          httpOnly: true,
-          sameSite: "none",
-          expires: new Date(0),
-          secure: true,
-        })
-        .status(200)
-        .json({ message: "logout completed" });
+      res.status(200).json({ message: "logout completed" });
     } else {
       res.status(406).json({ message: "token doesn't exist" });
     }
@@ -347,17 +321,11 @@ exports.OAuthNaverCallback = async (req, res, next) => {
           id: userIdCreated,
           username: naverName,
         });
-        res
-          .cookie("authorization", token, {
-            httpOnly: true,
-            sameSite: "none",
-            secure: true,
-          })
-          .status(200)
-          .json({
-            message: "login completed",
-            username: naverName,
-          });
+        res.status(200).json({
+          message: "login completed",
+          username: naverName,
+          token: token,
+        });
       }
     } else {
       res.status(500).json({
