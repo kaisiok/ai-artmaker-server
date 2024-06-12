@@ -31,7 +31,7 @@
 
 ```sh
 # 클론 리포지토리
-git clone https://github.com/username/projectname.git
+git clone https://github.com/kaisiok/ai-artmaker-server.git
 
 # 서버 설정
 cd ai-artmaker-server
