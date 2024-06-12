@@ -40,7 +40,6 @@ cp .env.example .env
 # .env 파일 수정
 
 # 서버 실행
-cd ../server
 npm start
 ```
 
@@ -50,3 +49,7 @@ npm start
 2. 원하는 tag를 선택해 이미지 생성(로그인 불필요)
 3. 문장을 입력해 이미지 생성(로그인 필요)
 4. 생성된 이미지를 저장 및 다운로드
+
+## 클라이언트 레포지토리 주소
+
+이 프로젝트의 클라이언트는 다음 [클라이언트 레포지토리](https://github.com/kaisiok/ai-artmaker-client.git)에서 확인하실 수 있습니다.
