@@ -1,4 +1,5 @@
 const express = require("express");
+const helmet = require("helmet");
 const https = require("https");
 const fs = require("fs");
 const sequelize = require("./util/database");
@@ -26,7 +27,7 @@ const caPath = "./ssl/wallmakerserver.p-e.kr-chain.pem";
 
 const corsOptions = {
   origin: [process.env.CLIENT_DOMAIN, "http://localhost:3001"],
-  methods: "GET,POST,DELETE,PUT,OPTIONS",
+  methods: "GET,POST,DELETE,PUT",
   credentials: true,
   allowedHeaders: ["Content-Type", "Authorization"],
 };
@@ -35,10 +36,10 @@ app.use((req, res, next) => {
   next();
 });
 app.use(cors(corsOptions));
-app.use(bodyParser.json({ limit: "50mb" }));
 app.use(bodyParser.urlencoded({ limit: "50mb", extended: true }));
 app.use(cookieParser());
 app.use(bodyParser.json());
+app.use(helmet());
 
 app.use("/img", express.static(path.join(__dirname, "img")));
 app.use("/img", express.static(path.join(__dirname, "sampleimg")));
