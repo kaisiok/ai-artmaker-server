@@ -39,10 +39,10 @@ app.use(cors(corsOptions));
 app.use(bodyParser.urlencoded({ limit: "50mb", extended: true }));
 app.use(cookieParser());
 app.use(bodyParser.json());
-app.use(helmet());
 
 app.use("/img", express.static(path.join(__dirname, "img")));
 app.use("/img", express.static(path.join(__dirname, "sampleimg")));
+app.use(helmet());
 app.use(verifyToken);
 
 app.use(userRoutes);
