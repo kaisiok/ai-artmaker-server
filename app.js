@@ -41,7 +41,6 @@ app.use(cookieParser());
 app.use(bodyParser.json());
 
 app.use("/img", express.static(path.join(__dirname, "img")));
-app.use("/img", express.static(path.join(__dirname, "sampleimg")));
 app.use(helmet());
 app.use(verifyToken);
 

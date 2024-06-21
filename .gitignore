@@ -6,3 +6,4 @@ node_modules
 .env.production.local
 img/*.png
 ssl/*.pem
+.DS_Store
